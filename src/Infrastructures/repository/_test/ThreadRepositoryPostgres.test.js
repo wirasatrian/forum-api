@@ -22,18 +22,18 @@ describe('ThreadRepository postgres', () => {
       // prerequisite: user should be exist in database
       await UsersTableTestHelper.addUser({ id: 'user-123', username: 'wirasatrian', fullname: 'Wira Satria Negara' });
 
-      const aThread = new CreateThread({
+      const thread = new CreateThread({
         title: 'Javascript',
         body: 'Belajar bahasa pemrograman Javascript',
+        owner: 'user-123',
       });
 
-      const fakeOwnerGenerator = () => 'user-123';
       const fakeIdGenerator = () => '123'; //stub
 
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator, fakeOwnerGenerator);
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      const createdThread = await threadRepositoryPostgres.createThread(aThread);
+      const createdThread = await threadRepositoryPostgres.createThread(thread);
 
       // Assert
       const threads = await ThreadsTableTestHelper.findThreadById(createdThread.id);
@@ -44,7 +44,7 @@ describe('ThreadRepository postgres', () => {
           owner: threads.owner,
         })
       );
-      //   expect(threads).toHaveLength(1);
+      expect(threads).toBeDefined();
     });
   });
 });

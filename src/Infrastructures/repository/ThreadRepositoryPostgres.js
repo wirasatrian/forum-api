@@ -23,6 +23,18 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     return new CreatedThread({ ...result.rows[0] });
   }
 
+  async verifyAvailabilityThread(threadId) {
+    const query = {
+      text: 'SELECT * FROM threads WHERE id = $1',
+      values: [threadId],
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError('thread tidak ditemukan');
+    }
+  }
+
   //   async getThreadById(id) {
   //     const query = {
   //       text: 'SELECT a.*, b.username FROM threads a, users b WHERE a.owner = b.id AND a.id = $1',

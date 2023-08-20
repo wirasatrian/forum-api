@@ -1,4 +1,5 @@
 const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
+const HttpFunctionalTestHelper = require('../../../../tests/HttpFunctionalTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const container = require('../../container');
@@ -6,9 +7,25 @@ const pool = require('../../database/postgres/pool');
 const createServer = require('../createServer');
 
 describe('/threads endpoints', () => {
-  afterEach(async () => {
+  let server;
+  let accessToken;
+
+  beforeAll(async () => {
     await UsersTableTestHelper.cleanTable();
     await AuthenticationsTableTestHelper.cleanTable();
+
+    server = await createServer(container);
+
+    const authPayload = {
+      username: 'wirasatrian',
+      password: 'secret',
+      fullname: 'Wira Satria Negara',
+    };
+
+    accessToken = await HttpFunctionalTestHelper.authentication({ server, payload: authPayload });
+  });
+
+  afterEach(async () => {
     await ThreadsTableTestHelper.cleanTable();
   });
 
@@ -19,46 +36,14 @@ describe('/threads endpoints', () => {
   describe('when POST /threads', () => {
     it('should response 201 and new thread', async () => {
       // Arrange
-      const server = await createServer(container);
 
-      // add user and get id
-      const userResponse = await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-          fullname: 'Wira Satria Negara',
-        },
-      });
-
-      //   const { id } = (JSON.parse(userResponse.payload)).data.addUser;
-
-      // Authenticate user and get access token
-      const authResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-        },
-      });
-
-      const { accessToken } = JSON.parse(authResponse.payload).data;
-      const requestPayload = {
+      const threadPayload = {
         title: 'Javascript',
         body: 'Belajar bahasa pemrograman Javascript',
       };
 
       // Action
-      const response = await server.inject({
-        method: 'POST',
-        url: '/threads',
-        payload: requestPayload,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await HttpFunctionalTestHelper.createThread({ server, accessToken, payload: threadPayload });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
@@ -66,22 +51,17 @@ describe('/threads endpoints', () => {
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedThread).toBeDefined();
     });
+    
 
     it('should response 401 when no access token in authorization header', async () => {
       // Arrange
-      const server = await createServer(container);
-
-      const requestPayload = {
+      const threadPayload = {
         title: 'Javascript',
         body: 'Belajar bahasa pemrograman Javascript',
       };
 
       // Action
-      const response = await server.inject({
-        method: 'POST',
-        url: '/threads',
-        payload: requestPayload,
-      });
+      const response = await HttpFunctionalTestHelper.createThread({ server, accessToken: '', payload: threadPayload });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
@@ -91,45 +71,12 @@ describe('/threads endpoints', () => {
 
     it('should response 400 when request payload not contain needed property', async () => {
       // Arrange
-      const server = await createServer(container);
-
-      // add user and get id
-      const userResponse = await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-          fullname: 'Wira Satria Negara',
-        },
-      });
-
-      //   const { id } = (JSON.parse(userResponse.payload)).data.addUser;
-
-      // Authenticate user and get access token
-      const authResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-        },
-      });
-
-      const { accessToken } = JSON.parse(authResponse.payload).data;
-      const requestPayload = {
+      const threadPayload = {
         body: 'Just a body in a payload',
       };
 
       // Action
-      const response = await server.inject({
-        method: 'POST',
-        url: '/threads',
-        payload: requestPayload,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await HttpFunctionalTestHelper.createThread({ server, accessToken, payload: threadPayload });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
@@ -140,47 +87,13 @@ describe('/threads endpoints', () => {
 
     it('should response 400 when request payload not meet data type specification', async () => {
       // Arrange
-      const server = await createServer(container);
-
-      // add user and get id
-      const userResponse = await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-          fullname: 'Wira Satria Negara',
-        },
-      });
-
-      //   const { id } = (JSON.parse(userResponse.payload)).data.addUser;
-
-      // Authenticate user and get access token
-      const authResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'wirasatrian',
-          password: 'secret',
-        },
-      });
-
-      const { accessToken } = JSON.parse(authResponse.payload).data;
-      const requestPayload = {
+      const threadPayload = {
         title: 12345,
-        body: Boolean(12345),
+        body: {},
       };
 
       // Action
-      const response = await server.inject({
-        method: 'POST',
-        url: '/threads',
-        payload: requestPayload,
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
+      const response = await HttpFunctionalTestHelper.createThread({ server, accessToken, payload: threadPayload });
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(400);

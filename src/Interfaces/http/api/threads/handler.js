@@ -10,7 +10,7 @@ class ThreadsHandler {
     const header = request.headers['authorization'];
     const createThreadUseCase = this._container.getInstance(CreateThreadUseCase.name);
     const addedThread = await createThreadUseCase.execute(request.payload, header);
-    
+
     const response = h.response({
       status: 'success',
       data: {

@@ -31,10 +31,13 @@ class JwtTokenManager extends AuthenticationTokenManager {
   }
 
   async getAccessTokenFromHeader(header) {
-    if (!header) {
-      throw new AuthenticationError('Missing authentication');
+    if (typeof header === 'undefined') {
+      header = ' ';
     }
     const accessToken = header.split(' ')[1];
+    if (!accessToken) {
+      throw new AuthenticationError('Missing authentication');
+    }
     return accessToken;
   }
 
