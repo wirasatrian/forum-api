@@ -51,7 +51,6 @@ describe('/threads endpoints', () => {
       expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedThread).toBeDefined();
     });
-    
 
     it('should response 401 when no access token in authorization header', async () => {
       // Arrange

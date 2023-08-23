@@ -2,13 +2,23 @@
 const pool = require('../src/Infrastructures/database/postgres/pool');
 
 const CommentsTableTestHelper = {
-  async addComment({ id, threadId, content, owner }) {
+  async addComment({ id, threadId, content, owner, isDelete = false }) {
     const query = {
-      text: 'INSERT INTO comments VALUES($1, $2, $3, $4)',
-      values: [id, threadId, content, owner],
+      text: 'INSERT INTO comments(id, thread_id, content, owner, is_delete) VALUES($1, $2, $3, $4, $5)',
+      values: [id, threadId, content, owner, isDelete],
     };
 
     await pool.query(query);
+  },
+
+  async deleteCommentById(id) {
+    const query = {
+      text: 'UPDATE comments SET is_delete = true WHERE id = $1 RETURNING id',
+      values: [id],
+    };
+
+    const result = await pool.query(query);
+    return result.rows[0];
   },
 
   async findCommentById(id) {

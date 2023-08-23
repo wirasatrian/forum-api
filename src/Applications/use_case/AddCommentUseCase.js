@@ -15,7 +15,7 @@ class AddCommentUseCase {
     const comment = new AddComment({
       content: useCasePayload.content,
       threadId: useCaseEndpointParameter,
-      owner,
+      owner: owner,
     });
     return this._commentRepository.addComment(comment);
   }

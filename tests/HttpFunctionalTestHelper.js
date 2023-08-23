@@ -1,4 +1,27 @@
 const HttpFunctionalTestHelper = {
+  async createUser({ server, payload }) {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/users',
+      payload: {
+        ...payload,
+      },
+    });
+    return JSON.parse(response.payload).data.addedUser;
+  },
+
+  async userAuthentication({ server, payload }) {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/authentications',
+      payload: {
+        username: payload.username,
+        password: payload.password,
+      },
+    });
+    return JSON.parse(response.payload).data;
+  },
+
   async authentication({ server, payload }) {
     // add user and get id
     const userResponse = await server.inject({
@@ -44,6 +67,18 @@ const HttpFunctionalTestHelper = {
       payload: {
         ...payload,
       },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response;
+  },
+
+  async deleteComment({ server, accessToken, threadId, commentId }) {
+    const response = await server.inject({
+      method: 'DELETE',
+      url: `/threads/${threadId}/comments/${commentId}`,
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
