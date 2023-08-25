@@ -25,7 +25,11 @@ class CommentRepositoryPostgres extends CommentRepository {
 
   async verifyCommentAvailability({ threadId, commentId }) {
     const query = {
-      text: 'SELECT * FROM comments AS c, threads AS t WHERE c.thread_id = t.id AND t.id = $1 AND c.id = $2 and NOT c.is_delete ',
+      text: `SELECT * 
+              FROM comments AS c 
+              JOIN threads AS t 
+              ON c.thread_id = t.id 
+              WHERE t.id = $1 AND c.id = $2 and NOT c.is_delete`,
       values: [threadId, commentId],
     };
 
@@ -61,10 +65,6 @@ class CommentRepositoryPostgres extends CommentRepository {
   }
 
   async deleteCommentById(commentId) {
-    // await this.verifyCommentAvailability({ threadId, commentId });
-    // const { owner } = await this.getCommentById(commentId);
-    // await this.verifyCommentOwner({ owner, commentId });
-    const { threadId, owner } = await this.getCommentById(commentId);
     const query = {
       text: 'UPDATE comments SET is_delete = NOT is_delete WHERE id = $1 RETURNING id',
       values: [commentId],
@@ -74,6 +74,27 @@ class CommentRepositoryPostgres extends CommentRepository {
     if (!result.rows.length) {
       throw new NotFoundError('thread atau comment tidak ditemukan');
     }
+    return result.rows[0];
+  }
+
+  async getCommentsByThreadId(threadId) {
+    const query = {
+      text: `SELECT c.id, u.username, 
+              TO_CHAR(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS date, 
+		          CASE
+			          WHEN NOT is_delete THEN c.content
+			          ELSE '**komentar telah dihapus**'
+		          END AS content 
+              FROM comments AS c 
+				      JOIN users AS u 
+              ON c.owner = u.id
+				      WHERE c.thread_id = $1
+              ORDER BY c.created_at`,
+      values: [threadId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 

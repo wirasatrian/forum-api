@@ -19,7 +19,7 @@ const HttpFunctionalTestHelper = {
         password: payload.password,
       },
     });
-    return JSON.parse(response.payload).data;
+    return JSON.parse(response.payload).data.accessToken;
   },
 
   async authentication({ server, payload }) {
@@ -31,6 +31,7 @@ const HttpFunctionalTestHelper = {
         ...payload,
       },
     });
+    const { id } = JSON.parse(userResponse.payload).data.addedUser;
 
     // Authenticate user and get access token
     const authResponse = await server.inject({
@@ -43,7 +44,11 @@ const HttpFunctionalTestHelper = {
     });
 
     const { accessToken } = JSON.parse(authResponse.payload).data;
-    return accessToken;
+    return {
+      owner: id,
+      accessToken: accessToken,
+    };
+    // return JSON.parse(authResponse.payload).data.accessToken;
   },
 
   async createThread({ server, accessToken, payload }) {
@@ -82,6 +87,14 @@ const HttpFunctionalTestHelper = {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+    });
+    return response;
+  },
+
+  async getThreadById({ server, threadId }) {
+    const response = await server.inject({
+      method: 'GET',
+      url: `/threads/${threadId}`,
     });
     return response;
   },
