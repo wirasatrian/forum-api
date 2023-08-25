@@ -7,6 +7,7 @@ describe('a CommentDetail entities', () => {
       id: 'comment-0001',
       username: 'Abhi Satria',
       date: '2023-08-24T07:19:09.775Z',
+      isDeleted: true,
     };
 
     // Action and Assert
@@ -33,6 +34,7 @@ describe('a CommentDetail entities', () => {
       username: 'Abhi Satria',
       date: '2023-08-24T07:19:09.775Z',
       content: 'is Javascript easy ?',
+      isDeleted: false,
     };
 
     // Action
@@ -43,5 +45,6 @@ describe('a CommentDetail entities', () => {
     expect(commentDetail.username).toEqual(payload.username);
     expect(commentDetail.date).toEqual(payload.date);
     expect(commentDetail.content).toEqual(payload.content);
+    expect(commentDetail.isDeleted).toEqual(payload.isDeleted);
   });
 });

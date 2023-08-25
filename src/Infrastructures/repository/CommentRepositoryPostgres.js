@@ -2,6 +2,7 @@ const AuthorizationError = require('../../Commons/exceptions/AuthorizationError'
 const NotFoundError = require('../../Commons/exceptions/NotFoundError');
 const CommentRepository = require('../../Domains/comments/CommentRepository');
 const AddedComment = require('../../Domains/comments/entities/AddedComment');
+const CommentDetail = require('../../Domains/comments/entities/CommentDetail');
 
 class CommentRepositoryPostgres extends CommentRepository {
   constructor(pool, idGenerator) {
@@ -81,10 +82,7 @@ class CommentRepositoryPostgres extends CommentRepository {
     const query = {
       text: `SELECT c.id, u.username, 
               TO_CHAR(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS date, 
-		          CASE
-			          WHEN NOT is_delete THEN c.content
-			          ELSE '**komentar telah dihapus**'
-		          END AS content 
+		          c.content, c.is_delete
               FROM comments AS c 
 				      JOIN users AS u 
               ON c.owner = u.id
@@ -94,7 +92,8 @@ class CommentRepositoryPostgres extends CommentRepository {
     };
 
     const result = await this._pool.query(query);
-    return result.rows;
+    const mapResult = result.rows.map((row) => new CommentDetail({ ...row, isDeleted: row.is_delete }));
+    return mapResult;
   }
 }
 

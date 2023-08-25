@@ -24,13 +24,30 @@ describe('GetThreadUseCase', () => {
         username: 'Abhi Satria',
         date: '2023-08-24T07:19:09.775Z',
         content: 'is Javascript easy ?',
+        isDeleted: false,
       }),
       new CommentDetail({
         id: 'comment-0002',
         username: 'Wira Satria Negara',
         date: '2023-08-24T09:19:09.775Z',
         content: 'You should start learning ...and enjoy it :)',
+        isDeleted: true,
       }),
+    ];
+
+    const mockChangedComments = [
+      {
+        id: 'comment-0001',
+        username: 'Abhi Satria',
+        date: '2023-08-24T07:19:09.775Z',
+        content: 'is Javascript easy ?',
+      },
+      {
+        id: 'comment-0002',
+        username: 'Wira Satria Negara',
+        date: '2023-08-24T09:19:09.775Z',
+        content: '**komentar telah dihapus**',
+      },
     ];
 
     // creating dependency
@@ -47,6 +64,8 @@ describe('GetThreadUseCase', () => {
       commentRepository: mockCommenRepository,
     });
 
+    getThreadUseCase._changeDeletedComment = jest.fn().mockImplementation((mockComments) => mockChangedComments);
+
     // Action
     const threadDetail = await getThreadUseCase.execute(useCaseEndpointParameter);
 
@@ -54,10 +73,11 @@ describe('GetThreadUseCase', () => {
     expect(threadDetail).toStrictEqual(
       new ThreadDetail({
         ...mockDetailThread,
-        comments: mockComments,
+        comments: mockChangedComments,
       })
     );
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseEndpointParameter);
     expect(mockCommenRepository.getCommentsByThreadId).toBeCalledWith(useCaseEndpointParameter);
+    expect(getThreadUseCase._changeDeletedComment).toBeCalledWith(mockComments);
   });
 });
