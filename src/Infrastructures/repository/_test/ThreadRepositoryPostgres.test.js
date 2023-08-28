@@ -12,6 +12,9 @@ describe('ThreadRepository postgres', () => {
   let newUser;
 
   beforeAll(async () => {
+    await ThreadsTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+
     newUser = {
       id: 'user-123',
       username: 'wirasatrian',
@@ -23,7 +26,7 @@ describe('ThreadRepository postgres', () => {
   });
 
   afterAll(async () => {
-    await CommentsTableTestHelper.cleanTable();
+    // await CommentsTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
     await UsersTableTestHelper.cleanTable();
     await pool.end();

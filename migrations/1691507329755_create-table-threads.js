@@ -26,6 +26,7 @@ exports.up = (pgm) => {
   });
 
   pgm.addConstraint('threads', 'fk_threads.owner_users.id', 'FOREIGN KEY(owner) REFERENCES users(id) ON DELETE CASCADE');
+  // pgm.addConstraint('threads', 'unique_threads.id', 'UNIQUE(id)');
 };
 
 exports.down = (pgm) => {

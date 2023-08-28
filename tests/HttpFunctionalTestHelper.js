@@ -98,6 +98,21 @@ const HttpFunctionalTestHelper = {
     });
     return response;
   },
+
+  async addReply({ server, accessToken, threadId, commentId, payload }) {
+    const response = await server.inject({
+      method: 'POST',
+      url: `/threads/${threadId}/comments/${commentId}/replies`,
+      payload: {
+        ...payload,
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    return response;
+  },
 };
 
 module.exports = HttpFunctionalTestHelper;

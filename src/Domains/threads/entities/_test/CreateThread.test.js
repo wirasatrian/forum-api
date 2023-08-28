@@ -16,6 +16,7 @@ describe('a MakeThread entities', () => {
     const payload = {
       title: 123,
       body: Boolean('123'),
+      owner: 'user-123',
     };
 
     // Action and Assert
@@ -27,6 +28,7 @@ describe('a MakeThread entities', () => {
     const payload = {
       title: 'Javascript',
       body: 'Belajar bahasa pemrograman Javascript',
+      owner: 'user-123',
     };
 
     // Action

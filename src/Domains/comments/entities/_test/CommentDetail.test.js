@@ -21,6 +21,7 @@ describe('a CommentDetail entities', () => {
       username: 123,
       date: '2023-08-24T07:19:09.775Z',
       content: {},
+      replies: 'balasan',
     };
 
     // Action and Assert
@@ -34,6 +35,7 @@ describe('a CommentDetail entities', () => {
       username: 'Abhi Satria',
       date: '2023-08-24T07:19:09.775Z',
       content: 'is Javascript easy ?',
+      replies: [],
       isDeleted: false,
     };
 
@@ -45,6 +47,7 @@ describe('a CommentDetail entities', () => {
     expect(commentDetail.username).toEqual(payload.username);
     expect(commentDetail.date).toEqual(payload.date);
     expect(commentDetail.content).toEqual(payload.content);
+    expect(commentDetail.replies).toEqual(payload.replies);
     expect(commentDetail.isDeleted).toEqual(payload.isDeleted);
   });
 });

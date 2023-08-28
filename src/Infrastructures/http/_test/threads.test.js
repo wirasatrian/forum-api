@@ -1,6 +1,7 @@
 const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
 const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
 const HttpFunctionalTestHelper = require('../../../../tests/HttpFunctionalTestHelper');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
 const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const container = require('../../container');
@@ -13,6 +14,8 @@ describe('/threads endpoints', () => {
   let accessToken2;
 
   beforeAll(async () => {
+    await UsersTableTestHelper.cleanTable();
+    await AuthenticationsTableTestHelper.cleanTable();
     server = await createServer(container);
 
     const auth1Payload = {
@@ -34,12 +37,17 @@ describe('/threads endpoints', () => {
   });
 
   afterAll(async () => {
-    await UsersTableTestHelper.cleanTable();
-    await AuthenticationsTableTestHelper.cleanTable();
+    // await RepliesTableTestHelper.cleanTable();
+    // await CommentsTableTestHelper.cleanTable();
+    // await ThreadsTableTestHelper.cleanTable();
+    // await UsersTableTestHelper.cleanTable();
+    // await AuthenticationsTableTestHelper.cleanTable();
     await pool.end();
   });
 
-  afterEach(async () => {
+  beforeEach(async () => {
+    await RepliesTableTestHelper.cleanTable();
+    await CommentsTableTestHelper.cleanTable();
     await ThreadsTableTestHelper.cleanTable();
   });
 
@@ -142,12 +150,37 @@ describe('/threads endpoints', () => {
         content: 'is Javascript easy ?',
       };
 
+      const reply1User2Comment = {
+        content: 'One step to start learning will go further in the long run :)',
+      };
+
+      const reply2User2Comment = {
+        content: 'It seem difficult for me to understand..LOL',
+      };
+
       const user1Comment = {
         content: 'You should learn Javascript ..have fun!',
       };
 
-      await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken2, threadId, payload: user2Comment });
+      // const reply1User1Comment = {
+      //   content: 'On the way ...',
+      // };
+
+      // const reply2User1Comment = {
+      //   content: `Let's go !`,
+      // };
+
+      const responseComment1 = await HttpFunctionalTestHelper.addComment({
+        server,
+        accessToken: accessToken2,
+        threadId,
+        payload: user2Comment,
+      });
+      const commentId = JSON.parse(responseComment1.payload).data.addedComment.id;
       await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken1, threadId, payload: user1Comment });
+
+      await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken1, threadId, commentId, payload: reply1User2Comment });
+      await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken2, threadId, commentId, payload: reply2User2Comment });
 
       // Action
       const response = await HttpFunctionalTestHelper.getThreadById({ server, threadId });
@@ -160,6 +193,7 @@ describe('/threads endpoints', () => {
       expect(responseJson.data.thread).toBeInstanceOf(Object);
       expect(responseJson.data.thread.comments).toBeInstanceOf(Array);
       expect(responseJson.data.thread.comments).toHaveLength(2);
+      // expect(responseJson.data.thread.comments.replies).toBeInstanceOf(Array);
     });
   });
 });
