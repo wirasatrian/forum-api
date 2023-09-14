@@ -1,16 +1,13 @@
 class DeleteReplyUseCase {
-  constructor({ replyRepository, authenticationTokenManager }) {
+  constructor({ replyRepository }) {
     this._replyRepository = replyRepository;
-    this._authenticationTokenManager = authenticationTokenManager;
   }
 
-  async execute(useCaseEndpointParameter, useCaseHeader) {
-    const { threadId, commentId, replyId } = useCaseEndpointParameter;
-    const accessToken = await this._authenticationTokenManager.getAccessTokenFromHeader(useCaseHeader);
-    await this._authenticationTokenManager.verifyAccessToken(accessToken);
-    const { id: owner } = await this._authenticationTokenManager.decodePayload(accessToken);
-    await this._replyRepository.verifyReplyAvailability({ threadId, commentId, replyId });
-    await this._replyRepository.verifyReplyOwner({ owner, replyId });
+  async execute(useCaseEndpointParameter, userId) {
+    // const { threadId, commentId, replyId } = useCaseEndpointParameter;
+    const { replyId } = useCaseEndpointParameter;
+    await this._replyRepository.verifyReplyAvailability(useCaseEndpointParameter);
+    await this._replyRepository.verifyReplyOwner({ owner: userId, replyId });
     await this._replyRepository.deleteReplyById(replyId);
   }
 }

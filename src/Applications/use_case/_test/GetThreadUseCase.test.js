@@ -7,20 +7,19 @@ const ThreadDetail = require('../../../Domains/threads/entities/ThreadDetail');
 const GetThreadUseCase = require('../GetThreadUseCase');
 
 describe('GetThreadUseCase', () => {
-  it('should orchestrate to get thread detail correctly', async () => {
-    //arrange
-    const useCaseEndpointParameter = 'thread-0001';
+  let mockThreadRepository;
+  let mockCommenRepository;
+  let mockReplyRepository;
+  let getThreadUseCase;
+  let mockComments;
+  let mockChangedComments;
+  let mockReplies;
+  let mockChangedReplies;
 
-    const mockDetailThread = new ThreadDetail({
-      id: 'thread-0001',
-      title: 'Javascript',
-      body: 'Learning Javascript is fun!',
-      date: '2021-08-08T07:19:09.775Z',
-      username: 'wirasatrian',
-      comments: [],
-    });
 
-    const mockComments = [
+  beforeAll(() => {
+    
+    mockComments = [
       new CommentDetail({
         id: 'comment-0001',
         username: 'abhi',
@@ -39,7 +38,7 @@ describe('GetThreadUseCase', () => {
       }),
     ];
 
-    const mockChangedComments = [
+    mockChangedComments = [
       {
         id: 'comment-0001',
         username: 'abhi',
@@ -56,7 +55,7 @@ describe('GetThreadUseCase', () => {
       },
     ];
 
-    const mockReplies = [
+    mockReplies = [
       new ReplyDetail({
         id: 'reply-0001',
         content: 'Small step to start learning will go further in the long run :)',
@@ -73,7 +72,7 @@ describe('GetThreadUseCase', () => {
       }),
     ];
 
-    const mockChangedReplies = [
+    mockChangedReplies = [
       {
         id: 'reply-0001',
         content: 'Small step to start learning will go further in the long run :)',
@@ -89,21 +88,36 @@ describe('GetThreadUseCase', () => {
     ];
 
     // creating dependency
-    const mockThreadRepository = new ThreadRepository();
-    const mockCommenRepository = new CommentRepository();
-    const mockReplyRepository = new ReplyRepository();
+    mockThreadRepository = new ThreadRepository();
+    mockCommenRepository = new CommentRepository();
+    mockReplyRepository = new ReplyRepository();
+
+    // Create the use case instace
+    getThreadUseCase = new GetThreadUseCase({
+      threadRepository: mockThreadRepository,
+      commentRepository: mockCommenRepository,
+      replyRepository: mockReplyRepository,
+    });
+  });
+
+  it('should orchestrate to get thread detail correctly', async () => {
+    //arrange
+    const useCaseEndpointParameter = 'thread-0001';
+
+    const mockDetailThread = new ThreadDetail({
+      id: 'thread-0001',
+      title: 'Javascript',
+      body: 'Learning Javascript is fun!',
+      date: '2021-08-08T07:19:09.775Z',
+      username: 'wirasatrian',
+      comments: [],
+    });
+
 
     // mocking
     mockThreadRepository.getThreadById = jest.fn().mockImplementation(() => Promise.resolve(mockDetailThread));
     mockCommenRepository.getCommentsByThreadId = jest.fn().mockImplementation(() => Promise.resolve(mockComments));
     mockReplyRepository.getRepliesByCommentId = jest.fn().mockImplementation(() => Promise.resolve(mockReplies));
-
-    // Create the use case instace
-    const getThreadUseCase = new GetThreadUseCase({
-      threadRepository: mockThreadRepository,
-      commentRepository: mockCommenRepository,
-      replyRepository: mockReplyRepository,
-    });
 
     getThreadUseCase._changeDeletedComment = jest.fn().mockImplementation((mockComments) => mockChangedComments);
     getThreadUseCase._changeDeletedReply = jest.fn().mockImplementation((mockReplies) => mockChangedReplies);
@@ -122,7 +136,26 @@ describe('GetThreadUseCase', () => {
 
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseEndpointParameter);
     expect(mockCommenRepository.getCommentsByThreadId).toBeCalledWith(useCaseEndpointParameter);
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(useCaseEndpointParameter);
     expect(getThreadUseCase._changeDeletedComment).toBeCalledWith(mockComments);
     expect(getThreadUseCase._changeDeletedReply).toBeCalledWith(mockReplies);
   });
+
+  it('should change deleted comment into /**komentar telah dihapus**', () => {
+    // Action
+    const modifiedComments = getThreadUseCase._changeDeletedComment(mockComments);
+
+    // Assert
+    expect(modifiedComments).toStrictEqual(mockChangedComments);
+    expect(modifiedComments[1].content).toBe('**komentar telah dihapus**');
+  });
+
+  it('should change deleted reply into /**balasan telah dihapus**', () => {
+    // Action
+    const modifiedReplies = getThreadUseCase._changeDeletedReply(mockReplies);
+
+    // Assert
+    expect(modifiedReplies).toStrictEqual(mockChangedReplies);
+    expect(modifiedReplies[1].content).toBe('**balasan telah dihapus**');
+  })
 });

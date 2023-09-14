@@ -13,7 +13,7 @@ describe('/threads endpoints for comment features', () => {
   let owner2;
   let accessToken1;
   let accessToken2;
-  let threadId;
+  const threadId = 'thread-1111';
 
   beforeAll(async () => {
     await CommentsTableTestHelper.cleanTable();
@@ -48,8 +48,16 @@ describe('/threads endpoints for comment features', () => {
       body: 'Belajar bahasa pemrograman Javascript',
     };
 
-    const response = await HttpFunctionalTestHelper.createThread({ server, accessToken: accessToken1, payload: threadPayload });
-    threadId = JSON.parse(response.payload).data.addedThread.id;
+    // threadId = 'thread-1111';
+
+    await ThreadsTableTestHelper.createThread({
+      id: threadId,
+      title: threadPayload.title,
+      body: threadPayload.body,
+      owner: owner1,
+    });
+    // const response = await HttpFunctionalTestHelper.createThread({ server, accessToken: accessToken1, payload: threadPayload });
+    // threadId = JSON.parse(response.payload).data.addedThread.id;
   });
 
   beforeEach(async () => {

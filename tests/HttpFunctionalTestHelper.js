@@ -48,18 +48,15 @@ const HttpFunctionalTestHelper = {
       owner: id,
       accessToken: accessToken,
     };
-    // return JSON.parse(authResponse.payload).data.accessToken;
   },
 
   async createThread({ server, accessToken, payload }) {
     const response = await server.inject({
       method: 'POST',
       url: '/threads',
-      payload: {
-        ...payload,
-      },
+      payload: payload,
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        authorization: `Bearer ${accessToken}`,
       },
     });
     return response;

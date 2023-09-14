@@ -62,6 +62,17 @@ describe('ThreadRepository postgres', () => {
     });
   });
 
+  describe('verifyAvailabilityThread function', () => {
+    it('should throw error when thread does not exist', async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action and Assert
+      await expect(threadRepositoryPostgres.verifyAvailabilityThread('thread-8888')).rejects.toThrowError(NotFoundError);
+
+    });
+  });
+
   describe('getThreadById function', () => {
     let newThread;
 

@@ -118,6 +118,33 @@ describe('ReplyRepository postgres', () => {
     });
   });
 
+  describe('getReplyById function', () => {
+    beforeEach(async () => {
+      await RepliesTableTestHelper.cleanTable();
+      await RepliesTableTestHelper.addReply(newReply);
+    });
+
+    it('should throw NotFoundError when reply not found', async () => {
+      // Arrange
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(replyRepositoryPostgres.getReplyById('reply-4567')).rejects.toThrowError(NotFoundError);
+    });
+
+    it('should return reply correctly', async () => {
+      // Arrange
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action
+      const reply = await replyRepositoryPostgres.getReplyById(newReply.id);
+
+      // Assert
+      expect(reply).toBeInstanceOf(Object);
+      expect(reply.id).toStrictEqual(newReply.id);
+    });
+  });
+
   describe('deleteReplyById function', () => {
     beforeEach(async () => {
       await RepliesTableTestHelper.cleanTable();

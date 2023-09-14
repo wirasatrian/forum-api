@@ -113,6 +113,16 @@ describe('CommentRepository postgres', () => {
     });
   });
 
+  describe('getCommentById function', () => {
+    it('should throw NotFoundError when comment not found', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(commentRepositoryPostgres.getCommentById('comment-4567')).rejects.toThrowError(NotFoundError);
+    });
+  });
+
   describe('deleteCommentById function', () => {
     beforeEach(async () => {
       await CommentsTableTestHelper.cleanTable();

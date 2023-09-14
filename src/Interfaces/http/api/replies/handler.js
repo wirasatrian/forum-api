@@ -9,10 +9,9 @@ class RepliesHandler {
   }
 
   async postReplyHandler(request, h) {
-    const header = request.headers['authorization'];
-    // const { threadId, commentID } = request.params;
+    const { id: userId } = request.auth.credentials;
     const addReplyUseCase = this._container.getInstance(AddReplyUseCase.name);
-    const addedReply = await addReplyUseCase.execute(request.params, header, request.payload);
+    const addedReply = await addReplyUseCase.execute(request.params, userId, request.payload);
 
     const response = h.response({
       status: 'success',
@@ -25,10 +24,9 @@ class RepliesHandler {
   }
 
   async deleteReplyHandler(request, h) {
-    const header = request.headers['authorization'];
-    // const { threadId, commentId, replyId } = request.params;
+    const { id: userId } = request.auth.credentials;
     const deleteReplyUseCase = this._container.getInstance(DeleteReplyUseCase.name);
-    await deleteReplyUseCase.execute(request.params, header);
+    await deleteReplyUseCase.execute(request.params, userId);
     return {
       status: 'success',
     };
