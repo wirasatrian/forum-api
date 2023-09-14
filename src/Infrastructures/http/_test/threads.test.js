@@ -120,81 +120,80 @@ describe('/threads endpoints', () => {
     });
   });
 
-  // describe('when GET /threads/{threadId}', () => {
-  //   // Arrange
-  //   let threadId;
+  describe('when GET /threads/{threadId}', () => {
+    // Arrange
+    let threadId;
 
-  //   beforeEach(async () => {
-  //     const threadPayload = {
-  //       title: 'Javascript',
-  //       body: 'Belajar bahasa pemrograman Javascript',
-  //     };
+    beforeEach(async () => {
+      const threadPayload = {
+        title: 'Javascript',
+        body: 'Belajar bahasa pemrograman Javascript',
+      };
 
-  //     const response = await HttpFunctionalTestHelper.createThread({ server, accessToken: accessToken1, payload: threadPayload });
-  //     threadId = JSON.parse(response.payload).data.addedThread.id;
-  //   });
+      const response = await HttpFunctionalTestHelper.createThread({ server, accessToken: accessToken1, payload: threadPayload });
+      threadId = JSON.parse(response.payload).data.addedThread.id;
+    });
 
-  //   it('should response 404 when thread does not exist', async () => {
-  //     // Action
-  //     const response = await HttpFunctionalTestHelper.getThreadById({ server, threadId: 'thread-xxxx' });
+    it('should response 404 when thread does not exist', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.getThreadById({ server, threadId: 'thread-xxxx' });
 
-  //     // Assert
-  //     const responseJson = JSON.parse(response.payload);
-  //     expect(response.statusCode).toEqual(404);
-  //     expect(responseJson.status).toEqual('fail');
-  //     expect(responseJson.message).toEqual('thread tidak ditemukan');
-  //   });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread tidak ditemukan');
+    });
 
-  //   it('should response 200 and thread detail', async () => {
-  //     // Arrange
-  //     const user2Comment = {
-  //       content: 'is Javascript easy ?',
-  //     };
+    it('should response 200 and thread detail', async () => {
+      // Arrange
+      const user2Comment = {
+        content: 'is Javascript easy ?',
+      };
 
-  //     const reply1User2Comment = {
-  //       content: 'One step to start learning will go further in the long run :)',
-  //     };
+      const reply1User2Comment = {
+        content: 'One step to start learning will go further in the long run :)',
+      };
 
-  //     const reply2User2Comment = {
-  //       content: 'It seem difficult for me to understand..LOL',
-  //     };
+      const reply2User2Comment = {
+        content: 'It seem difficult for me to understand..LOL',
+      };
 
-  //     const user1Comment = {
-  //       content: 'You should learn Javascript ..have fun!',
-  //     };
+      const user1Comment = {
+        content: 'You should learn Javascript ..have fun!',
+      };
 
-  //     // const reply1User1Comment = {
-  //     //   content: 'On the way ...',
-  //     // };
+      // const reply1User1Comment = {
+      //   content: 'On the way ...',
+      // };
 
-  //     // const reply2User1Comment = {
-  //     //   content: `Let's go !`,
-  //     // };
+      // const reply2User1Comment = {
+      //   content: `Let's go !`,
+      // };
 
-  //     const responseComment1 = await HttpFunctionalTestHelper.addComment({
-  //       server,
-  //       accessToken: accessToken2,
-  //       threadId,
-  //       payload: user2Comment,
-  //     });
-  //     const commentId = JSON.parse(responseComment1.payload).data.addedComment.id;
-  //     await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken1, threadId, payload: user1Comment });
+      const responseComment1 = await HttpFunctionalTestHelper.addComment({
+        server,
+        accessToken: accessToken2,
+        threadId,
+        payload: user2Comment,
+      });
+      const commentId = JSON.parse(responseComment1.payload).data.addedComment.id;
+      await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken1, threadId, payload: user1Comment });
 
-  //     await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken1, threadId, commentId, payload: reply1User2Comment });
-  //     await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken2, threadId, commentId, payload: reply2User2Comment });
+      await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken1, threadId, commentId, payload: reply1User2Comment });
+      await HttpFunctionalTestHelper.addReply({ server, accessToken: accessToken2, threadId, commentId, payload: reply2User2Comment });
 
-  //     // Action
-  //     const response = await HttpFunctionalTestHelper.getThreadById({ server, threadId });
+      // Action
+      const response = await HttpFunctionalTestHelper.getThreadById({ server, threadId });
 
-  //     // Assert
-  //     const responseJson = JSON.parse(response.payload);
-  //     expect(response.statusCode).toEqual(200);
-  //     expect(responseJson.status).toEqual('success');
-  //     expect(responseJson.data).toBeInstanceOf(Object);
-  //     expect(responseJson.data.thread).toBeInstanceOf(Object);
-  //     expect(responseJson.data.thread.comments).toBeInstanceOf(Array);
-  //     expect(responseJson.data.thread.comments).toHaveLength(2);
-  //     // expect(responseJson.data.thread.comments.replies).toBeInstanceOf(Array);
-  //   });
-  // });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data).toBeInstanceOf(Object);
+      expect(responseJson.data.thread).toBeInstanceOf(Object);
+      expect(responseJson.data.thread.comments).toBeInstanceOf(Array);
+      expect(responseJson.data.thread.comments).toHaveLength(2);
+    });
+  });
 });

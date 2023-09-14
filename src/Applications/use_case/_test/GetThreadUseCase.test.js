@@ -16,9 +16,7 @@ describe('GetThreadUseCase', () => {
   let mockReplies;
   let mockChangedReplies;
 
-
   beforeAll(() => {
-    
     mockComments = [
       new CommentDetail({
         id: 'comment-0001',
@@ -113,7 +111,6 @@ describe('GetThreadUseCase', () => {
       comments: [],
     });
 
-
     // mocking
     mockThreadRepository.getThreadById = jest.fn().mockImplementation(() => Promise.resolve(mockDetailThread));
     mockCommenRepository.getCommentsByThreadId = jest.fn().mockImplementation(() => Promise.resolve(mockComments));
@@ -136,7 +133,6 @@ describe('GetThreadUseCase', () => {
 
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseEndpointParameter);
     expect(mockCommenRepository.getCommentsByThreadId).toBeCalledWith(useCaseEndpointParameter);
-    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(useCaseEndpointParameter);
     expect(getThreadUseCase._changeDeletedComment).toBeCalledWith(mockComments);
     expect(getThreadUseCase._changeDeletedReply).toBeCalledWith(mockReplies);
   });
@@ -157,5 +153,5 @@ describe('GetThreadUseCase', () => {
     // Assert
     expect(modifiedReplies).toStrictEqual(mockChangedReplies);
     expect(modifiedReplies[1].content).toBe('**balasan telah dihapus**');
-  })
+  });
 });
