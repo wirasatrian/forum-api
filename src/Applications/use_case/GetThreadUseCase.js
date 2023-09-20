@@ -17,7 +17,7 @@ class GetThreadUseCase {
     for (let index = 0; index < comments.length; index++) {
       const comment = comments[index];
       const replies = await this._replyRepository.getRepliesByCommentId(comment.id);
-      comments[index].replies = this._changeDeletedReply(replies);
+      comment.replies = this._changeDeletedReply(replies);
     }
 
     thread.comments = comments;

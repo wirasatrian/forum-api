@@ -63,13 +63,30 @@ describe('ThreadRepository postgres', () => {
   });
 
   describe('verifyAvailabilityThread function', () => {
-    it('should throw error when thread does not exist', async () => {
+    beforeAll(async () => {
+      await ThreadsTableTestHelper.cleanTable();
+      newThread = {
+        id: 'thread-0001',
+        title: 'Javascript',
+        body: 'Learn Javascript is fun!',
+        owner: 'user-123',
+      };
+      await ThreadsTableTestHelper.createThread(newThread);
+    });
+
+    it('should throw NotFoundError when thread does not exist', async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action and Assert
       await expect(threadRepositoryPostgres.verifyAvailabilityThread('thread-8888')).rejects.toThrowError(NotFoundError);
+    });
+    it('should not throw NotFoundError when thread available', async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
+      // Action & Assert
+      await expect(threadRepositoryPostgres.verifyAvailabilityThread('thread-0001')).resolves.not.toThrowError(NotFoundError);
     });
   });
 

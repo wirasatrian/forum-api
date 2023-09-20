@@ -8,7 +8,7 @@ const GetThreadUseCase = require('../GetThreadUseCase');
 
 describe('GetThreadUseCase', () => {
   let mockThreadRepository;
-  let mockCommenRepository;
+  let mockCommentRepository;
   let mockReplyRepository;
   let getThreadUseCase;
   let mockComments;
@@ -17,42 +17,6 @@ describe('GetThreadUseCase', () => {
   let mockChangedReplies;
 
   beforeAll(() => {
-    mockComments = [
-      new CommentDetail({
-        id: 'comment-0001',
-        username: 'abhi',
-        date: '2023-08-24T07:19:09.775Z',
-        content: 'is Javascript easy ?',
-        replies: [],
-        isDeleted: false,
-      }),
-      new CommentDetail({
-        id: 'comment-0002',
-        username: 'wirasatrian',
-        date: '2023-08-24T09:19:09.775Z',
-        content: 'You should start learning ...and enjoy it :)',
-        replies: [],
-        isDeleted: true,
-      }),
-    ];
-
-    mockChangedComments = [
-      {
-        id: 'comment-0001',
-        username: 'abhi',
-        date: '2023-08-24T07:19:09.775Z',
-        replies: [],
-        content: 'is Javascript easy ?',
-      },
-      {
-        id: 'comment-0002',
-        username: 'wirasatrian',
-        date: '2023-08-24T09:19:09.775Z',
-        replies: [],
-        content: '**komentar telah dihapus**',
-      },
-    ];
-
     mockReplies = [
       new ReplyDetail({
         id: 'reply-0001',
@@ -79,21 +43,57 @@ describe('GetThreadUseCase', () => {
       },
       {
         id: 'reply-0002',
-        username: 'abhi',
-        date: '2023-08-29T09:19:09.775Z',
         content: '**balasan telah dihapus**',
+        date: '2023-08-29T09:19:09.775Z',
+        username: 'abhi',
+      },
+    ];
+
+    mockComments = [
+      new CommentDetail({
+        id: 'comment-0001',
+        username: 'abhi',
+        date: '2023-08-24T07:19:09.775Z',
+        content: 'is Javascript easy ?',
+        replies: mockReplies,
+        isDeleted: false,
+      }),
+      new CommentDetail({
+        id: 'comment-0002',
+        username: 'wirasatrian',
+        date: '2023-08-24T09:19:09.775Z',
+        content: 'You should start learning ...and enjoy it :)',
+        replies: [],
+        isDeleted: true,
+      }),
+    ];
+
+    mockChangedComments = [
+      {
+        id: 'comment-0001',
+        username: 'abhi',
+        date: '2023-08-24T07:19:09.775Z',
+        replies: mockChangedReplies,
+        content: 'is Javascript easy ?',
+      },
+      {
+        id: 'comment-0002',
+        username: 'wirasatrian',
+        date: '2023-08-24T09:19:09.775Z',
+        replies: [],
+        content: '**komentar telah dihapus**',
       },
     ];
 
     // creating dependency
     mockThreadRepository = new ThreadRepository();
-    mockCommenRepository = new CommentRepository();
+    mockCommentRepository = new CommentRepository();
     mockReplyRepository = new ReplyRepository();
 
     // Create the use case instace
     getThreadUseCase = new GetThreadUseCase({
       threadRepository: mockThreadRepository,
-      commentRepository: mockCommenRepository,
+      commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
     });
   });
@@ -108,12 +108,12 @@ describe('GetThreadUseCase', () => {
       body: 'Learning Javascript is fun!',
       date: '2021-08-08T07:19:09.775Z',
       username: 'wirasatrian',
-      comments: [],
+      comments: mockChangedComments,
     });
 
     // mocking
     mockThreadRepository.getThreadById = jest.fn().mockImplementation(() => Promise.resolve(mockDetailThread));
-    mockCommenRepository.getCommentsByThreadId = jest.fn().mockImplementation(() => Promise.resolve(mockComments));
+    mockCommentRepository.getCommentsByThreadId = jest.fn().mockImplementation(() => Promise.resolve(mockComments));
     mockReplyRepository.getRepliesByCommentId = jest.fn().mockImplementation(() => Promise.resolve(mockReplies));
 
     getThreadUseCase._changeDeletedComment = jest.fn().mockImplementation((mockComments) => mockChangedComments);
@@ -124,16 +124,21 @@ describe('GetThreadUseCase', () => {
     const threadDetail = await getThreadUseCase.execute(useCaseEndpointParameter);
 
     // Assert
+
     expect(threadDetail).toEqual(
       new ThreadDetail({
         ...mockDetailThread,
         comments: mockChangedComments,
       })
     );
-
+    expect(threadDetail.comments[0].replies).toStrictEqual(mockChangedReplies);
     expect(mockThreadRepository.getThreadById).toBeCalledWith(useCaseEndpointParameter);
-    expect(mockCommenRepository.getCommentsByThreadId).toBeCalledWith(useCaseEndpointParameter);
+    expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(useCaseEndpointParameter);
+    expect(mockReplyRepository.getRepliesByCommentId).toHaveBeenCalledTimes(mockComments.length);
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(mockComments[0].id);
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(mockComments[1].id);
     expect(getThreadUseCase._changeDeletedComment).toBeCalledWith(mockComments);
+    expect(getThreadUseCase._changeDeletedReply).toHaveBeenCalledTimes(mockComments.length);
     expect(getThreadUseCase._changeDeletedReply).toBeCalledWith(mockReplies);
   });
 

@@ -19,7 +19,7 @@ describe('DeleteCommentUseCase', () => {
 
     mockCommentRepository.verifyCommentAvailability = jest.fn().mockImplementation(() => Promise.resolve());
     mockCommentRepository.verifyCommentOwner = jest.fn().mockImplementation(() => Promise.resolve());
-    mockCommentRepository.deleteCommentById = jest.fn().mockImplementation(() => Promise.resolve());
+    mockCommentRepository.deleteCommentById = jest.fn().mockImplementation(() => Promise.resolve({ id: 'user-321' }));
 
     // creating use case instance
     const deleteCommentUseCase = new DeleteCommentUseCase({

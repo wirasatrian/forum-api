@@ -106,6 +106,20 @@ describe('ReplyRepository postgres', () => {
         })
       ).rejects.toThrowError(NotFoundError);
     });
+
+    it('should not throw NotFoundError when reply available', async () => {
+      // Arrange
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(
+        replyRepositoryPostgres.verifyReplyAvailability({
+          threadId: 'thread-0001',
+          commentId: newReply.commentId,
+          replyId: newReply.id,
+        })
+      ).resolves.not.toThrowError(NotFoundError);
+    });
   });
 
   describe('verifyReplyOwner function', () => {
@@ -115,6 +129,16 @@ describe('ReplyRepository postgres', () => {
 
       // Action & Assert
       await expect(replyRepositoryPostgres.verifyReplyOwner(({ id: replyId, owner } = newReply))).rejects.toThrowError(AuthorizationError);
+    });
+
+    it('should not throw AuthorizationError when reply owner match', async () => {
+      // Arrange
+      const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      const owner = 'user-123';
+      const replyId = 'reply-0001';
+      await expect(replyRepositoryPostgres.verifyReplyOwner({ owner, replyId })).resolves.not.toThrowError(AuthorizationError);
     });
   });
 
@@ -173,15 +197,16 @@ describe('ReplyRepository postgres', () => {
       await expect(replyRepositoryPostgres.deleteReplyById('comment-4567')).rejects.toThrowError(NotFoundError);
     });
 
-    it('should delete reply', async () => {
+    it('should delete reply and return deleted reply id', async () => {
       // Arrange
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
-      const delReply = await replyRepositoryPostgres.deleteReplyById(newReply.id);
-      const reply = await replyRepositoryPostgres.getReplyById(delReply.id);
+      const { id } = await replyRepositoryPostgres.deleteReplyById(newReply.id);
+      const reply = await replyRepositoryPostgres.getReplyById(id);
       // Assert
       expect(reply.is_delete).toEqual(true);
+      expect(id).toStrictEqual(newReply.id);
     });
   });
 
@@ -192,9 +217,13 @@ describe('ReplyRepository postgres', () => {
       await CommentsTableTestHelper.cleanTable();
       await ThreadsTableTestHelper.cleanTable();
       await UsersTableTestHelper.cleanTable();
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'wirasatrian', fullname: 'Wira Satria Negara' });
-      await UsersTableTestHelper.addUser({ id: 'user-321', username: 'abhi', fullname: 'Abhi Satria' });
-      await UsersTableTestHelper.addUser({ id: 'user-222', username: 'budi', fullname: 'Budi Utomo' });
+
+      const user1 = { id: 'user-123', username: 'wirasatrian', fullname: 'Wira Satria Negara' };
+      const user2 = { id: 'user-321', username: 'abhi', fullname: 'Abhi Satria' };
+      const user3 = { id: 'user-222', username: 'budi', fullname: 'Budi Utomo' };
+      await UsersTableTestHelper.addUser(user1);
+      await UsersTableTestHelper.addUser(user2);
+      await UsersTableTestHelper.addUser(user3);
 
       await ThreadsTableTestHelper.createThread({
         id: 'thread-0001',
@@ -210,13 +239,15 @@ describe('ReplyRepository postgres', () => {
         owner: 'user-321',
       });
 
-      await RepliesTableTestHelper.addReply(newReply);
-      await RepliesTableTestHelper.addReply({
+      const moreReply = {
         id: 'reply-0002',
         commentId: 'comment-0001',
         content: 'It is difficult for me. LOL',
         owner: 'user-222',
-      });
+      };
+      await RepliesTableTestHelper.addReply(newReply);
+      await RepliesTableTestHelper.addReply(moreReply);
+
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
       // Action
@@ -225,6 +256,18 @@ describe('ReplyRepository postgres', () => {
       // Assert
       expect(replies).toBeInstanceOf(Array);
       expect(replies).toHaveLength(2);
+      expect(replies[0]).toBeInstanceOf(Object);
+      expect(replies[0].id).toStrictEqual(newReply.id);
+      expect(replies[0].username).toStrictEqual(user1.username);
+      expect(replies[0].content).toStrictEqual(newReply.content);
+      expect(replies[0].date).toBeDefined();
+      expect(replies[0].isDeleted).toBe(false);
+      expect(replies[1]).toBeInstanceOf(Object);
+      expect(replies[1].id).toStrictEqual(moreReply.id);
+      expect(replies[1].username).toStrictEqual(user3.username);
+      expect(replies[1].content).toStrictEqual(moreReply.content);
+      expect(replies[1].date).toBeDefined();
+      expect(replies[1].isDeleted).toBe(false);
     });
   });
 });

@@ -72,11 +72,11 @@ describe('/threads endpoints for comment features', () => {
   });
 
   afterAll(async () => {
-    // await RepliesTableTestHelper.cleanTable();
-    // await CommentsTableTestHelper.cleanTable();
-    // await ThreadsTableTestHelper.cleanTable();
-    // await UsersTableTestHelper.cleanTable();
-    // await AuthenticationsTableTestHelper.cleanTable();
+    await RepliesTableTestHelper.cleanTable();
+    await CommentsTableTestHelper.cleanTable();
+    await ThreadsTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+    await AuthenticationsTableTestHelper.cleanTable();
     await pool.end();
   });
 
@@ -102,128 +102,129 @@ describe('/threads endpoints for comment features', () => {
       expect(responseJson.data).toBeInstanceOf(Object);
       expect(responseJson.data.addedReply).toBeInstanceOf(Object);
     });
-    //     it('should response 401 when no access token in authorization header', async () => {
-    //       // Arrange
-    //       const replyPayload = {
-    //         content: 'One step to start learning will go further in the long run :)',
-    //       };
 
-    //       // Action
-    //       const response = await HttpFunctionalTestHelper.addReply({ server, accessToken: '', threadId, commentId, payload: replyPayload });
+    it('should response 401 when no access token in authorization header', async () => {
+      // Arrange
+      const replyPayload = {
+        content: 'One step to start learning will go further in the long run :)',
+      };
 
-    //       // Assert
-    //       const responseJson = JSON.parse(response.payload);
-    //       expect(response.statusCode).toEqual(401);
-    //       expect(responseJson.message).toEqual('Missing authentication');
-    //     });
+      // Action
+      const response = await HttpFunctionalTestHelper.addReply({ server, accessToken: '', threadId, commentId, payload: replyPayload });
 
-    //     it('should response 400 when request payload not contain needed property', async () => {
-    //       // Arrange
-    //       const replyPayload = {
-    //         title: 'One step to start learning will go further in the long run :)',
-    //       };
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(401);
+      expect(responseJson.message).toEqual('Missing authentication');
+    });
 
-    //       // Action
-    //       const response = await HttpFunctionalTestHelper.addReply({
-    //         server,
-    //         accessToken: accessToken1,
-    //         threadId,
-    //         commentId,
-    //         payload: replyPayload,
-    //       });
+    it('should response 400 when request payload not contain needed property', async () => {
+      // Arrange
+      const replyPayload = {
+        title: 'One step to start learning will go further in the long run :)',
+      };
 
-    //       // Assert
-    //       const responseJson = JSON.parse(response.payload);
-    //       expect(response.statusCode).toEqual(400);
-    //       expect(responseJson.status).toEqual('fail');
-    //       expect(responseJson.message).toEqual('tidak dapat membuat reply baru pada comment karena properti tidak lengkap');
-    //     });
+      // Action
+      const response = await HttpFunctionalTestHelper.addReply({
+        server,
+        accessToken: accessToken1,
+        threadId,
+        commentId,
+        payload: replyPayload,
+      });
 
-    //     it('should response 400 when request payload not meet data type specification', async () => {
-    //       // Arrange
-    //       const replyPayload = {
-    //         content: 556677,
-    //       };
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(400);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('tidak dapat membuat reply baru pada comment karena properti tidak lengkap');
+    });
 
-    //       // Action
-    //       const response = await HttpFunctionalTestHelper.addReply({
-    //         server,
-    //         accessToken: accessToken1,
-    //         threadId,
-    //         commentId,
-    //         payload: replyPayload,
-    //       });
-    //       // Assert
-    //       const responseJson = JSON.parse(response.payload);
-    //       expect(response.statusCode).toEqual(400);
-    //       expect(responseJson.status).toEqual('fail');
-    //       expect(responseJson.message).toEqual('tidak dapat membuat reply baru pada comment karena tipe data properti tidak sesuai');
-    //     });
-    //   });
+    it('should response 400 when request payload not meet data type specification', async () => {
+      // Arrange
+      const replyPayload = {
+        content: 556677,
+      };
 
-    //   // describe('when DELETE /threads/{threadId}/comments/{commentId}', () => {
-    //   //   let commentId;
+      // Action
+      const response = await HttpFunctionalTestHelper.addReply({
+        server,
+        accessToken: accessToken1,
+        threadId,
+        commentId,
+        payload: replyPayload,
+      });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(400);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('tidak dapat membuat reply baru pada comment karena tipe data properti tidak sesuai');
+    });
+  });
 
-    //   //   beforeEach(async () => {
-    //   //     // Arrange
-    //   //     const commentPayload = {
-    //   //       content: 'is Javascript easy ?',
-    //   //     };
+  describe('when DELETE /threads/{threadId}/comments/{commentId}', () => {
+    let commentId;
 
-    //   //     const response = await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken2, threadId, payload: commentPayload });
-    //   //     const { id } = JSON.parse(response.payload).data.addedComment;
-    //   //     commentId = id;
-    //   //   });
-    //   //   it('should response 401 when no access token in authorization header', async () => {
-    //   //     // Action
-    //   //     const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: ' ', threadId, commentId });
+    beforeEach(async () => {
+      // Arrange
+      const commentPayload = {
+        content: 'is Javascript easy ?',
+      };
 
-    //   //     // Assert
-    //   //     const responseJson = JSON.parse(response.payload);
-    //   //     expect(response.statusCode).toEqual(401);
-    //   //     expect(responseJson.message).toEqual('Missing authentication');
-    //   //   });
+      const response = await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken2, threadId, payload: commentPayload });
+      const { id } = JSON.parse(response.payload).data.addedComment;
+      commentId = id;
+    });
+    it('should response 401 when no access token in authorization header', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: ' ', threadId, commentId });
 
-    //   //   it('should response 404 when comment or thread not found', async () => {
-    //   //     // Action
-    //   //     const response = await HttpFunctionalTestHelper.deleteComment({
-    //   //       server,
-    //   //       accessToken: accessToken2,
-    //   //       threadId,
-    //   //       commentId: commentId + 'xxx',
-    //   //     });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(401);
+      expect(responseJson.message).toEqual('Missing authentication');
+    });
 
-    //   //     // Assert
-    //   //     const responseJson = JSON.parse(response.payload);
-    //   //     expect(response.statusCode).toEqual(404);
-    //   //     expect(responseJson.status).toEqual('fail');
-    //   //     expect(responseJson.message).toEqual('thread atau comment tidak ditemukan');
-    //   //   });
+    it('should response 404 when comment or thread not found', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteComment({
+        server,
+        accessToken: accessToken2,
+        threadId,
+        commentId: commentId + 'xxx',
+      });
 
-    //   //   it('should response 403 when comment owner not match', async () => {
-    //   //     // Action
-    //   //     const response = await HttpFunctionalTestHelper.deleteComment({
-    //   //       server,
-    //   //       accessToken: accessToken1,
-    //   //       threadId,
-    //   //       commentId,
-    //   //     });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread atau comment tidak ditemukan');
+    });
 
-    //   //     // Assert
-    //   //     const responseJson = JSON.parse(response.payload);
-    //   //     expect(response.statusCode).toEqual(403);
-    //   //     expect(responseJson.status).toEqual('fail');
-    //   //     expect(responseJson.message).toEqual('Anda tidak berhak mengubah atau menghapus komentar ini');
-    //   //   });
+    it('should response 403 when comment owner not match', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteComment({
+        server,
+        accessToken: accessToken1,
+        threadId,
+        commentId,
+      });
 
-    //   //   it('should response 200 and return success status', async () => {
-    //   //     // Action
-    //   //     const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: accessToken2, threadId, commentId });
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(403);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('Anda tidak berhak mengubah atau menghapus komentar ini');
+    });
 
-    //   //     // Assert
-    //   //     const responseJson = JSON.parse(response.payload);
-    //   //     expect(response.statusCode).toEqual(200);
-    //   //     expect(responseJson.status).toEqual('success');
-    //   //   });
+    it('should response 200 and return success status', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: accessToken2, threadId, commentId });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+    });
   });
 });
