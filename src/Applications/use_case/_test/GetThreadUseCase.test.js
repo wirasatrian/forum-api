@@ -98,6 +98,88 @@ describe('GetThreadUseCase', () => {
     });
   });
 
+  it('should change deleted comments to "**komentar telah dihapus**"', () => {
+    // Arrange
+    const comments = [
+      {
+        id: 'comment-0001',
+        username: 'abhi',
+        date: '2023-08-24T07:19:09.775Z',
+        content: 'is Javascript easy ?',
+        replies: [],
+        isDeleted: false,
+      },
+      {
+        id: 'comment-0002',
+        username: 'wirasatrian',
+        date: '2023-08-24T09:19:09.775Z',
+        content: 'You should start learning ...and enjoy it :)',
+        replies: [],
+        isDeleted: true,
+      },
+    ];
+
+    // Action
+    const modifiedComments = getThreadUseCase._changeDeletedComment(comments);
+
+    // Assert
+    expect(modifiedComments).toEqual([
+      {
+        id: 'comment-0001',
+        username: 'abhi',
+        date: '2023-08-24T07:19:09.775Z',
+        replies: [],
+        content: 'is Javascript easy ?',
+      },
+      {
+        id: 'comment-0002',
+        username: 'wirasatrian',
+        date: '2023-08-24T09:19:09.775Z',
+        replies: [],
+        content: '**komentar telah dihapus**',
+      },
+    ]);
+  });
+
+  it('should change deleted replies to "**balasan telah dihapus**"', () => {
+    // Arrange
+    const replies = [
+      {
+        id: 'reply-0001',
+        username: 'wirasatrian',
+        date: '2023-08-29T07:19:09.775Z',
+        content: 'Small step to start learning will go further in the long run :)',
+        isDeleted: false,
+      },
+      {
+        id: 'reply-0002',
+        username: 'abhi',
+        date: '2023-08-29T09:19:09.775Z',
+        content: 'It is difficult for me to understand..LOL',
+        isDeleted: true,
+      },
+    ];
+
+    // Action
+    const modifiedReplies = getThreadUseCase._changeDeletedReply(replies);
+
+    // Assert
+    expect(modifiedReplies).toEqual([
+      {
+        id: 'reply-0001',
+        username: 'wirasatrian',
+        date: '2023-08-29T07:19:09.775Z',
+        content: 'Small step to start learning will go further in the long run :)',
+      },
+      {
+        id: 'reply-0002',
+        username: 'abhi',
+        date: '2023-08-29T09:19:09.775Z',
+        content: '**balasan telah dihapus**',
+      },
+    ]);
+  });
+
   it('should orchestrate to get thread detail correctly', async () => {
     //arrange
     const useCaseEndpointParameter = 'thread-0001';
@@ -138,25 +220,9 @@ describe('GetThreadUseCase', () => {
     expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(mockComments[0].id);
     expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(mockComments[1].id);
     expect(getThreadUseCase._changeDeletedComment).toBeCalledWith(mockComments);
+    expect(threadDetail.comments).toStrictEqual(mockChangedComments);
     expect(getThreadUseCase._changeDeletedReply).toHaveBeenCalledTimes(mockComments.length);
     expect(getThreadUseCase._changeDeletedReply).toBeCalledWith(mockReplies);
-  });
-
-  it('should change deleted comment into /**komentar telah dihapus**', () => {
-    // Action
-    const modifiedComments = getThreadUseCase._changeDeletedComment(mockComments);
-
-    // Assert
-    expect(modifiedComments).toStrictEqual(mockChangedComments);
-    expect(modifiedComments[1].content).toBe('**komentar telah dihapus**');
-  });
-
-  it('should change deleted reply into /**balasan telah dihapus**', () => {
-    // Action
-    const modifiedReplies = getThreadUseCase._changeDeletedReply(mockReplies);
-
-    // Assert
-    expect(modifiedReplies).toStrictEqual(mockChangedReplies);
-    expect(modifiedReplies[1].content).toBe('**balasan telah dihapus**');
+    expect(threadDetail.comments[0].replies).toStrictEqual(mockChangedReplies);
   });
 });

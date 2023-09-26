@@ -29,26 +29,6 @@ class JwtTokenManager extends AuthenticationTokenManager {
     const artifacts = this._jwt.decode(token);
     return artifacts.decoded.payload;
   }
-
-  async getAccessTokenFromHeader(header) {
-    if (typeof header === 'undefined') {
-      header = ' ';
-    }
-    const accessToken = header.split(' ')[1];
-    if (!accessToken) {
-      throw new AuthenticationError('Missing authentication');
-    }
-    return accessToken;
-  }
-
-  async verifyAccessToken(token) {
-    try {
-      const artifacts = this._jwt.decode(token);
-      this._jwt.verify(artifacts, process.env.ACCESS_TOKEN_KEY);
-    } catch (error) {
-      throw new InvariantError('access token tidak valid');
-    }
-  }
 }
 
 module.exports = JwtTokenManager;

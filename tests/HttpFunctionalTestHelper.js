@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 const HttpFunctionalTestHelper = {
   async createUser({ server, payload }) {
     const response = await server.inject({
@@ -108,6 +109,17 @@ const HttpFunctionalTestHelper = {
       },
     });
 
+    return response;
+  },
+
+  async deleteReply({ server, accessToken, threadId, commentId, replyId }) {
+    const response = await server.inject({
+      method: 'DELETE',
+      url: `/threads/${threadId}/comments/${commentId}/replies/${replyId}`,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     return response;
   },
 };

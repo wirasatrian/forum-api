@@ -162,22 +162,30 @@ describe('/threads endpoints for comment features', () => {
     });
   });
 
-  describe('when DELETE /threads/{threadId}/comments/{commentId}', () => {
-    let commentId;
+  describe('when DELETE /threads/{threadId}/comments/{commentId}/replies/{replyId}', () => {
+    let replyId;
 
     beforeEach(async () => {
       // Arrange
-      const commentPayload = {
-        content: 'is Javascript easy ?',
+      const replyPayload = {
+        content: 'One step to start learning will go further in the long run :)',
       };
 
-      const response = await HttpFunctionalTestHelper.addComment({ server, accessToken: accessToken2, threadId, payload: commentPayload });
-      const { id } = JSON.parse(response.payload).data.addedComment;
-      commentId = id;
+      const response = await HttpFunctionalTestHelper.addReply({
+        server,
+        accessToken: accessToken1,
+        threadId,
+        commentId,
+        payload: replyPayload,
+      });
+
+      const { id } = JSON.parse(response.payload).data.addedReply;
+      replyId = id;
     });
+
     it('should response 401 when no access token in authorization header', async () => {
       // Action
-      const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: ' ', threadId, commentId });
+      const response = await HttpFunctionalTestHelper.deleteReply({ server, accessToken: ' ', threadId, commentId, replyId });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
@@ -185,41 +193,77 @@ describe('/threads endpoints for comment features', () => {
       expect(responseJson.message).toEqual('Missing authentication');
     });
 
-    it('should response 404 when comment or thread not found', async () => {
+    it('should response 404 when thread not found', async () => {
       // Action
-      const response = await HttpFunctionalTestHelper.deleteComment({
+      const response = await HttpFunctionalTestHelper.deleteReply({
         server,
         accessToken: accessToken2,
-        threadId,
-        commentId: commentId + 'xxx',
+        threadId: threadId + 'xxx',
+        commentId,
+        replyId,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(404);
       expect(responseJson.status).toEqual('fail');
-      expect(responseJson.message).toEqual('thread atau comment tidak ditemukan');
+      expect(responseJson.message).toEqual('thread atau comment atau reply tidak ditemukan');
     });
 
-    it('should response 403 when comment owner not match', async () => {
+    it('should response 404 when comment not found', async () => {
       // Action
-      const response = await HttpFunctionalTestHelper.deleteComment({
+      const response = await HttpFunctionalTestHelper.deleteReply({
         server,
-        accessToken: accessToken1,
+        accessToken: accessToken2,
+        threadId,
+        commentId: commentId + 'xxx',
+        replyId,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread atau comment atau reply tidak ditemukan');
+    });
+
+    it('should response 404 when reply not found', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteReply({
+        server,
+        accessToken: accessToken2,
         threadId,
         commentId,
+        replyId: replyId + 'xxx',
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(404);
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread atau comment atau reply tidak ditemukan');
+    });
+
+    it('should response 403 when reply owner not match', async () => {
+      // Action
+      const response = await HttpFunctionalTestHelper.deleteReply({
+        server,
+        accessToken: accessToken2,
+        threadId,
+        commentId,
+        replyId,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(403);
       expect(responseJson.status).toEqual('fail');
-      expect(responseJson.message).toEqual('Anda tidak berhak mengubah atau menghapus komentar ini');
+      expect(responseJson.message).toEqual('Anda tidak berhak mengubah atau menghapus balasan komentar ini');
     });
 
     it('should response 200 and return success status', async () => {
       // Action
-      const response = await HttpFunctionalTestHelper.deleteComment({ server, accessToken: accessToken2, threadId, commentId });
+      const response = await HttpFunctionalTestHelper.deleteReply({ server, accessToken: accessToken1, threadId, commentId, replyId });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
