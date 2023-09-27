@@ -51,6 +51,11 @@ describe('ThreadRepository postgres', () => {
 
       // Assert
       const threads = await ThreadsTableTestHelper.findThreadById(createdThread.id);
+      expect(threads).toBeInstanceOf(Object);
+      expect(threads.id).toStrictEqual(createdThread.id);
+      expect(threads.title).toStrictEqual(createdThread.title);
+      expect(threads.body).toStrictEqual(thread.body);
+      expect(threads.owner).toStrictEqual(createdThread.owner);
       expect(createdThread).toStrictEqual(
         new CreatedThread({
           id: threads.id,

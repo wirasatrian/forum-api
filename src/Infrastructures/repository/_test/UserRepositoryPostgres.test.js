@@ -46,28 +46,17 @@ describe('UserRepositoryPostgres', () => {
       const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      await userRepositoryPostgres.addUser(registerUser);
+      const user = await userRepositoryPostgres.addUser(registerUser);
 
       // Assert
-      const users = await UsersTableTestHelper.findUsersById('user-123');
-      expect(users).toHaveLength(1);
-    });
-
-    it('should return registered user correctly', async () => {
-      // Arrange
-      const registerUser = new RegisterUser({
-        username: 'dicoding',
-        password: 'secret_password',
-        fullname: 'Dicoding Indonesia',
-      });
-      const fakeIdGenerator = () => '123'; // stub!
-      const userRepositoryPostgres = new UserRepositoryPostgres(pool, fakeIdGenerator);
-
-      // Action
-      const registeredUser = await userRepositoryPostgres.addUser(registerUser);
-
-      // Assert
-      expect(registeredUser).toStrictEqual(
+      const result = await UsersTableTestHelper.findUsersById('user-123');
+      expect(result).toBeInstanceOf(Array);
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toStrictEqual(user.id);
+      expect(result[0].username).toStrictEqual(user.username);
+      expect(result[0].fullname).toStrictEqual(user.fullname);
+      expect(result[0].password).toStrictEqual(registerUser.password);
+      expect(user).toStrictEqual(
         new RegisteredUser({
           id: 'user-123',
           username: 'dicoding',

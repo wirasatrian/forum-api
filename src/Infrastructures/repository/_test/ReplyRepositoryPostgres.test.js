@@ -61,6 +61,12 @@ describe('ReplyRepository postgres', () => {
 
       // Assert
       const replyRecord = await RepliesTableTestHelper.findReplyById(createdReply.id);
+      expect(replyRecord).toBeInstanceOf(Object);
+      expect(replyRecord.id).toStrictEqual(createdReply.id);
+      expect(replyRecord.content).toStrictEqual(createdReply.content);
+      expect(replyRecord.owner).toStrictEqual(createdReply.owner);
+      expect(replyRecord.is_delete).toStrictEqual(false);
+      expect(replyRecord.comment_id).toStrictEqual(newReply.commentId);
       expect(createdReply).toStrictEqual(
         new AddedReply({
           id: `reply-${fakeIdGenerator()}`,
@@ -68,7 +74,6 @@ describe('ReplyRepository postgres', () => {
           owner: newReply.owner,
         })
       );
-      expect(replyRecord).toBeInstanceOf(Object);
     });
   });
 

@@ -57,8 +57,13 @@ describe('CommentRepository postgres', () => {
 
       // Assert
       const result = await CommentsTableTestHelper.findCommentById(createdComment.id);
-      expect(result).toBeInstanceOf(Object);
+      expect(result).toBeInstanceOf(Array);
       expect(result).toHaveLength(1);
+      expect(result[0].id).toStrictEqual(createdComment.id);
+      expect(result[0].content).toStrictEqual(createdComment.content);
+      expect(result[0].owner).toStrictEqual(createdComment.owner);
+      expect(result[0].thread_id).toStrictEqual(newComment.threadId);
+      expect(result[0].is_delete).toStrictEqual(false);
       expect(createdComment).toStrictEqual(
         new AddedComment({
           id: `comment-${fakeIdGenerator()}`,
@@ -144,12 +149,34 @@ describe('CommentRepository postgres', () => {
   });
 
   describe('getCommentById function', () => {
+    beforeEach(async () => {
+      await CommentsTableTestHelper.cleanTable();
+      await CommentsTableTestHelper.addComment(newComment);
+    });
+
     it('should throw NotFoundError when comment not found', async () => {
       // Arrange
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
       // Action & Assert
       await expect(commentRepositoryPostgres.getCommentById('comment-4567')).rejects.toThrowError(NotFoundError);
+    });
+
+    it('should return comment correctly when comment found ', async () => {
+      // Arrange
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
+
+      // Action
+      const comment = await commentRepositoryPostgres.getCommentById(newComment.id);
+
+      // Assert
+      expect(comment).toBeInstanceOf(Object);
+      expect(comment.id).toStrictEqual(newComment.id);
+      expect(comment.content).toStrictEqual(newComment.content);
+      expect(comment.owner).toStrictEqual(newComment.owner);
+      expect(comment.thread_id).toStrictEqual(newComment.threadId);
+      expect(comment.is_delete).toStrictEqual(false);
+      expect(comment.created_at).toBeDefined();
     });
   });
 
