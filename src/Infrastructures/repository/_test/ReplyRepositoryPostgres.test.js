@@ -6,6 +6,7 @@ const AuthorizationError = require('../../../Commons/exceptions/AuthorizationErr
 const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const AddReply = require('../../../Domains/replies/entities/AddReply');
 const AddedReply = require('../../../Domains/replies/entities/AddedReply');
+const ReplyDetail = require('../../../Domains/replies/entities/ReplyDetail');
 const pool = require('../../database/postgres/pool');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 const ReplyRepositoryPostgres = require('../ReplyRepositoryPostgres');
@@ -54,6 +55,15 @@ describe('ReplyRepository postgres', () => {
 
       const fakeIdGenerator = () => '888';
 
+      const expectedReply = {
+        id: `reply-${fakeIdGenerator()}`,
+        content: newReply.content,
+        owner: newReply.owner,
+        comment_id: newReply.commentId,
+        is_delete: false,
+        created_at: expect.any(Date),
+      };
+
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
@@ -61,17 +71,12 @@ describe('ReplyRepository postgres', () => {
 
       // Assert
       const replyRecord = await RepliesTableTestHelper.findReplyById(createdReply.id);
-      expect(replyRecord).toBeInstanceOf(Object);
-      expect(replyRecord.id).toStrictEqual(createdReply.id);
-      expect(replyRecord.content).toStrictEqual(createdReply.content);
-      expect(replyRecord.owner).toStrictEqual(createdReply.owner);
-      expect(replyRecord.is_delete).toStrictEqual(false);
-      expect(replyRecord.comment_id).toStrictEqual(newReply.commentId);
+      expect(replyRecord).toStrictEqual(expectedReply);
       expect(createdReply).toStrictEqual(
         new AddedReply({
-          id: `reply-${fakeIdGenerator()}`,
-          content: newReply.content,
-          owner: newReply.owner,
+          id: expectedReply.id,
+          content: expectedReply.content,
+          owner: expectedReply.owner,
         })
       );
     });
@@ -165,12 +170,21 @@ describe('ReplyRepository postgres', () => {
       // Arrange
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
+      const expectedReply = {
+        id: newReply.id,
+        content: newReply.content,
+        owner: newReply.owner,
+        comment_id: newReply.commentId,
+        is_delete: false,
+        created_at: expect.any(Date),
+      };
+
       // Action
       const reply = await replyRepositoryPostgres.getReplyById(newReply.id);
 
       // Assert
-      expect(reply).toBeInstanceOf(Object);
-      expect(reply.id).toStrictEqual(newReply.id);
+      expect(reply).toStrictEqual(expectedReply);
+      expect(reply.created_at).toBeInstanceOf(Date);
     });
   });
 
@@ -250,6 +264,7 @@ describe('ReplyRepository postgres', () => {
         content: 'It is difficult for me. LOL',
         owner: 'user-222',
       };
+
       await RepliesTableTestHelper.addReply(newReply);
       await RepliesTableTestHelper.addReply(moreReply);
 

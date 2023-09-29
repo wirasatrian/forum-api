@@ -44,6 +44,14 @@ describe('ThreadRepository postgres', () => {
 
       const fakeIdGenerator = () => '123'; //stub
 
+      const expectedThread = {
+        id: `thread-${fakeIdGenerator()}`,
+        title: thread.title,
+        body: thread.body,
+        owner: thread.owner,
+        created_at: expect.any(Date),
+      };
+
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
@@ -51,19 +59,14 @@ describe('ThreadRepository postgres', () => {
 
       // Assert
       const threads = await ThreadsTableTestHelper.findThreadById(createdThread.id);
-      expect(threads).toBeInstanceOf(Object);
-      expect(threads.id).toStrictEqual(createdThread.id);
-      expect(threads.title).toStrictEqual(createdThread.title);
-      expect(threads.body).toStrictEqual(thread.body);
-      expect(threads.owner).toStrictEqual(createdThread.owner);
+      expect(threads).toStrictEqual(expectedThread);
       expect(createdThread).toStrictEqual(
         new CreatedThread({
-          id: threads.id,
-          title: threads.title,
-          owner: threads.owner,
+          id: expectedThread.id,
+          title: expectedThread.title,
+          owner: expectedThread.owner,
         })
       );
-      expect(threads).toBeDefined();
     });
   });
 

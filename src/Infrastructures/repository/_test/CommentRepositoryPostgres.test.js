@@ -50,6 +50,15 @@ describe('CommentRepository postgres', () => {
 
       const fakeIdGenerator = () => '222';
 
+      const expectedResult = {
+        id: `comment-${fakeIdGenerator()}`,
+        content: newComment.content,
+        owner: newComment.owner,
+        thread_id: newComment.threadId,
+        is_delete: false,
+        created_at: expect.any(Date),
+      };
+
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
@@ -57,18 +66,13 @@ describe('CommentRepository postgres', () => {
 
       // Assert
       const result = await CommentsTableTestHelper.findCommentById(createdComment.id);
-      expect(result).toBeInstanceOf(Array);
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toStrictEqual(createdComment.id);
-      expect(result[0].content).toStrictEqual(createdComment.content);
-      expect(result[0].owner).toStrictEqual(createdComment.owner);
-      expect(result[0].thread_id).toStrictEqual(newComment.threadId);
-      expect(result[0].is_delete).toStrictEqual(false);
+
+      expect(result).toStrictEqual(expectedResult);
       expect(createdComment).toStrictEqual(
         new AddedComment({
-          id: `comment-${fakeIdGenerator()}`,
-          content: result[0].content,
-          owner: result[0].owner,
+          id: expectedResult.id,
+          content: expectedResult.content,
+          owner: expectedResult.owner,
         })
       );
     });
@@ -166,17 +170,21 @@ describe('CommentRepository postgres', () => {
       // Arrange
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
 
+      const expectedComment = {
+        id: newComment.id,
+        content: newComment.content,
+        owner: newComment.owner,
+        thread_id: newComment.threadId,
+        is_delete: false,
+        created_at: expect.any(Date),
+      };
+
       // Action
       const comment = await commentRepositoryPostgres.getCommentById(newComment.id);
 
       // Assert
-      expect(comment).toBeInstanceOf(Object);
-      expect(comment.id).toStrictEqual(newComment.id);
-      expect(comment.content).toStrictEqual(newComment.content);
-      expect(comment.owner).toStrictEqual(newComment.owner);
-      expect(comment.thread_id).toStrictEqual(newComment.threadId);
-      expect(comment.is_delete).toStrictEqual(false);
-      expect(comment.created_at).toBeDefined();
+      expect(comment).toStrictEqual(expectedComment);
+      expect(comment.created_at).toBeInstanceOf(Date);
     });
   });
 
