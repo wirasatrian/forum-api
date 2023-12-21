@@ -56,4 +56,3 @@ describe('when GET /', () => {
     expect(responseJson.value).toEqual('* Hello World *');
   });
 });
-
